@@ -1,0 +1,58 @@
+
+***SUMMARY***SUMMARY***SUMMARY***SUMMARY***SUMMARY***
+
+Simulation:         Pathfinder_Model_West Exit
+Scenario:           West Exit
+Version:            2026.2.0715
+Mode:               Steering
+Total Occupants:    14
+
+
+Completion Times for All Occupants (s):
+  Min:                7.1 "entry_lobby"
+  Max:               30.4 "east_lobby"
+  Average:           20.5
+  StdDev:             6.3
+
+Completion Times by Behavior (s):
+       Behavior	Count	Min	     Min_Name	 Max	    Max_Name	 Avg	StdDev
+  Goto Any Exit	   14	7.1	"entry_lobby"	30.4	"east_lobby"	20.5	   6.3
+*all behaviors*	   14	7.1	"entry_lobby"	30.4	"east_lobby"	20.5	   6.3
+
+Completion Times by Profile (s):
+       Profile	Count	Min	     Min_Name	 Max	    Max_Name	 Avg	StdDev
+       Default	   14	7.1	"entry_lobby"	30.4	"east_lobby"	20.5	   6.3
+*all profiles*	   14	7.1	"entry_lobby"	30.4	"east_lobby"	20.5	   6.3
+
+Travel Distances for All Occupants (m):
+  Min:                7.8 "entry_lobby"
+  Max:               34.5 "east_lobby"
+  Average:           23.2
+  StdDev:             7.3
+
+Movement Distance by Behavior (m):
+       Behavior	Count	Min	     Min_Name	 Max	    Max_Name	 Avg	StdDev
+  Goto Any Exit	   14	7.8	"entry_lobby"	34.5	"east_lobby"	23.2	   7.3
+*all behaviors*	   14	7.8	"entry_lobby"	34.5	"east_lobby"	23.2	   7.3
+
+Movement Distance by Profile (m):
+       Profile	Count	Min	     Min_Name	 Max	    Max_Name	 Avg	StdDev
+       Default	   14	7.8	"entry_lobby"	34.5	"east_lobby"	23.2	   7.3
+*all profiles*	   14	7.8	"entry_lobby"	34.5	"east_lobby"	23.2	   7.3
+
+[Components] All:   2
+[Components] Doors: 1
+Triangles:          118
+Startup Time:       0.1s
+CPU Time:           0.3s
+
+Door Flow Rates:
+                  Door	First_In	Last_Out	Last_Out_Name	Total_Use	 Flow_Avg
+                      	     (s)	     (s)	             	   (pers)	 (pers/s)
+Floor 0.0 m->west_exit	     7.1	    30.4	   east_lobby	       14	     0.60
+
+Room Usage:
+               Room	First_In	Last_Out	Last_Out_Name	Total_Use
+                   	     (s)	     (s)	             	   (pers)
+Floor 0.0 m->Room00	     0.0	    30.4	   east_lobby	       14
+

@@ -1,0 +1,7 @@
+sep=;
+ID;MIN;MAX;LOW;HIGH;AVG;STDDEV
+Pathfinder_Model_NE_Exit.pth;3.50;33.50;14.80;31.00;22.90;8.10
+Pathfinder_Model_South Exit.pth;6.40;28.70;14.90;25.90;20.40;5.50
+Pathfinder_Model_West Exit.pth;7.80;34.50;15.90;30.50;23.20;7.30
+ALL;3.50;34.50;15.12;29.22;22.17;7.05
+

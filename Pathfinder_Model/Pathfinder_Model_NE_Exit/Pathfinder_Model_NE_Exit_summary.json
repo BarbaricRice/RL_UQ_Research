@@ -1,0 +1,175 @@
+{
+  "cpu_time": "0.4",
+  "startup_time": "0.1",
+  "components_all": 2,
+  "simulation": "Pathfinder_Model_NE_Exit",
+  "movement_distance_profile": [
+    {
+      "min": {
+        "distance": "3.46",
+        "name": "ne_lobby"
+      },
+      "avg": "22.88",
+      "max": {
+        "distance": "33.47",
+        "name": "n2_office"
+      },
+      "profile": "Default",
+      "count": 14,
+      "stdDev": "8.11"
+    },
+    {
+      "min": {
+        "distance": "3.46",
+        "name": "ne_lobby"
+      },
+      "avg": "22.88",
+      "max": {
+        "distance": "33.47",
+        "name": "n2_office"
+      },
+      "profile": "*all profiles*",
+      "count": 14,
+      "stdDev": "8.11"
+    }
+  ],
+  "version": "2026.2.0715",
+  "completion_times_all": {
+    "average": "20.24",
+    "min": {
+      "name": "ne_lobby",
+      "time": "3.52"
+    },
+    "stdDev": "7.04",
+    "max": {
+      "name": "n2_office",
+      "time": "29.82"
+    }
+  },
+  "completion_times_profile": [
+    {
+      "min": {
+        "name": "ne_lobby",
+        "time": "3.52"
+      },
+      "avg": "20.24",
+      "max": {
+        "name": "n2_office",
+        "time": "29.82"
+      },
+      "profile": "Default",
+      "count": 14,
+      "stdDev": "7.04"
+    },
+    {
+      "min": {
+        "name": "ne_lobby",
+        "time": "3.52"
+      },
+      "avg": "20.24",
+      "max": {
+        "name": "n2_office",
+        "time": "29.82"
+      },
+      "profile": "*all profiles*",
+      "count": 14,
+      "stdDev": "7.04"
+    }
+  ],
+  "movement_distances_all": {
+    "average": "22.88",
+    "min": {
+      "distance": "3.46",
+      "name": "ne_lobby"
+    },
+    "stdDev": "8.11",
+    "max": {
+      "distance": "33.47",
+      "name": "n2_office"
+    }
+  },
+  "mode": "Steering",
+  "triangles": 118,
+  "room_usage": [
+    {
+      "total_use": 14,
+      "first_in": "0.00",
+      "last_out": "29.82",
+      "room": "Floor 0.0 m->Room00",
+      "last_out_name": "n2_office"
+    }
+  ],
+  "total_occupants": 14,
+  "scenario": "NE_Exit",
+  "door_flow_rates": [
+    {
+      "total_use": 14,
+      "door": "Floor 0.0 m->ne_exit",
+      "first_in": "3.52",
+      "last_out": "29.82",
+      "flow_avg": "0.53",
+      "last_out_name": "n2_office"
+    }
+  ],
+  "movement_distances_behavior": [
+    {
+      "min": {
+        "distance": "3.46",
+        "name": "ne_lobby"
+      },
+      "avg": "22.88",
+      "max": {
+        "distance": "33.47",
+        "name": "n2_office"
+      },
+      "count": 14,
+      "behavior": "Goto Any Exit",
+      "stdDev": "8.11"
+    },
+    {
+      "min": {
+        "distance": "3.46",
+        "name": "ne_lobby"
+      },
+      "avg": "22.88",
+      "max": {
+        "distance": "33.47",
+        "name": "n2_office"
+      },
+      "count": 14,
+      "behavior": "*all behaviors*",
+      "stdDev": "8.11"
+    }
+  ],
+  "components_doors": 1,
+  "completion_times_behavior": [
+    {
+      "min": {
+        "name": "ne_lobby",
+        "time": "3.52"
+      },
+      "avg": "20.24",
+      "max": {
+        "name": "n2_office",
+        "time": "29.82"
+      },
+      "count": 14,
+      "behavior": "Goto Any Exit",
+      "stdDev": "7.04"
+    },
+    {
+      "min": {
+        "name": "ne_lobby",
+        "time": "3.52"
+      },
+      "avg": "20.24",
+      "max": {
+        "name": "n2_office",
+        "time": "29.82"
+      },
+      "count": 14,
+      "behavior": "*all behaviors*",
+      "stdDev": "7.04"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+Version=1
+AnimFile=Pathfinder_Model_South Exit.pfd
+GeomAnimFile=Pathfinder_Model_South Exit.pfg
+MeshFile=Pathfinder_Model_South Exit.txt
+ImportedGeomFile=Pathfinder_Model_South Exit.geom
+ViewsFile=Pathfinder_Model_South Exit_views.json
+SimulationsFile=..\\Pathfinder_Model_simulations.json

@@ -1,0 +1,5 @@
+sep=;
+ID;MIN;MAX;LOW;HIGH;AVG;STDDEV
+../Pathfinder_Model_NE_Exit.pth;3.50;33.50;14.80;31.00;22.90;8.10
+ALL;3.50;33.50;14.80;31.00;22.90;8.10
+
