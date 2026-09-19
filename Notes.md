@@ -38,3 +38,4 @@
 - distance to the "node bridges". this could be assessed
 - do a zone model to assess losing tenability within the corridors. can extract the information from ifc model
 - 1. identify critical room. 2. identify worst room to egress to it. 3. zone model to assess egress to this room.
+- maybe could apply occupant densities to it
