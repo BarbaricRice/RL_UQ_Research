@@ -257,179 +257,187 @@ model.create_entity("IfcRelAggregates", RelatingObject=building, RelatedObjects=
 # from occupying the same line or passing through one another.
 # A continuous storey slab fills the gaps later in the script.
 # ------------------------------------------------------------
+import ifcopenshell.api.feature
+import ifcopenshell.api.spatial
+import ifcopenshell.api.boundary
+import ifcopenshell.util.placement
+
+# Rectangles are (x_left, y_bottom, length_x, width_y).
+# Shared boundaries are intentional; identical room/corridor wall faces are
+# opened in pairs. Dedicated top and south corridor bands are non-overlapping.
+ROOMS = {
+    "Staff and meeting":       (0.0, 20.0, 3.5, 4.0),
+    "Operating room 1":        (3.5, 20.0, 7.5, 4.0),
+    "Theatre support":         (0.0, 12.0, 3.5, 6.0),
+    "Operating room 2":        (3.5, 12.0, 7.5, 6.0),
+    "Sterile set-up":          (0.0, 0.0, 3.5, 6.0),
+    "Operating room 3":        (3.5, 0.0, 7.5, 6.0),
+    "Operating room 4":        (12.0, 20.0, 4.0, 4.0),
+    "Scope processing":        (16.0, 20.0, 4.5, 4.0),
+    "Hybrid theatre":          (12.0, 12.0, 8.5, 6.0),
+    "Sterile stock":           (12.0, 0.0, 5.0, 6.0),
+    "Cath lab":                (17.0, 0.0, 3.5, 6.0),
+    "Recovery bays 1-3":      (22.0, 20.0, 4.0, 4.0),
+    "Recovery bays 4-8":      (26.0, 20.0, 5.5, 4.0),
+    "Recovery bays 9-12":     (33.0, 20.0, 4.0, 4.0),
+    "Recovery bays 13-16":    (37.0, 20.0, 4.0, 4.0),
+    "Patient bay hold A":      (22.0, 12.0, 4.0, 6.0),
+    "Recovery station":        (26.0, 12.0, 3.0, 6.0),
+    "Recovery utility":        (29.0, 12.0, 2.5, 6.0),
+    "Patient bay hold B":      (33.0, 12.0, 4.0, 6.0),
+    "Recovery beds":          (37.0, 12.0, 4.0, 6.0),
+    "Lab support":            (22.0, 0.0, 4.0, 6.0),
+    "Patient lobby":          (26.0, 0.0, 3.0, 6.0),
+    "Lifts and stairs":       (29.0, 0.0, 2.5, 6.0),
+    "Waiting and reception":  (33.0, 0.0, 4.0, 6.0),
+    "Consult and offices":    (37.0, 3.0, 4.0, 3.0),
+    "Staff amenities":       (37.0, 0.0, 4.0, 3.0),
+}
+
+# Corridor graph: all these rectangular circulation spaces are connected.
+CORRIDORS = {
+    "Recovery circulation": (12.0, 24.0, 29.0, 1.0),
+    "Theatre spine":        (11.0, 0.0, 1.0, 25.0),
+    "Clinical spine":       (20.5, 0.0, 1.5, 25.0),
+    "Public spine":         (31.5, 0.0, 1.5, 25.0),
+    "North cross corridor": (0.0, 18.0, 41.0, 2.0),
+    "South cross corridor": (0.0, 6.0, 41.0, 2.0),
+}
 
 hospital_rooms = {}
+for room_name, (x, y, dx, dy) in ROOMS.items():
+    hospital_rooms[room_name] = create_room(dx, dy, room_name,
+                                             np.array([x, y, 0.0]))
 
-# West wing: food service and staff spaces
-hospital_rooms["DiningRoomNorth"] = create_room(
-    7.6, 4.1, "Dining Room North", np.array([0.5, 17.2, 0.0])
-)
-hospital_rooms["DiningRoomSouth"] = create_room(
-    7.6, 4.1, "Dining Room South", np.array([0.5, 12.3, 0.0])
-)
-hospital_rooms["ServingArea"] = create_room(
-    7.6, 4.4, "Serving Area", np.array([0.5, 7.1, 0.0])
-)
-hospital_rooms["PhysicianDining"] = create_room(
-    3.2, 2.4, "Physician Dining", np.array([6.0, 3.7, 0.0])
-)
-hospital_rooms["WestElevatorLobby"] = create_room(
-    2.0, 2.0, "West Elevator Lobby", np.array([3.5, 0.6, 0.0])
-)
+hospital_corridors = {}
+for corridor_name, (x, y, dx, dy) in CORRIDORS.items():
+    hospital_corridors[corridor_name] = create_room(dx, dy, corridor_name,
+                                                   np.array([x, y, 0.0]))
 
-# North public wing
-hospital_rooms["GiftShop"] = create_room(
-    2.8, 2.3, "Gift Shop", np.array([10.0, 19.0, 0.0])
-)
-hospital_rooms["MainLobby"] = create_room(
-    7.0, 3.0, "Main Hospital Lobby", np.array([14.0, 18.6, 0.0])
-)
-hospital_rooms["Chapel"] = create_room(
-    3.0, 2.8, "Chapel", np.array([24.3, 18.8, 0.0])
-)
-hospital_rooms["NorthWaitingArea"] = create_room(
-    6.3, 3.6, "North Waiting Area", np.array([29.0, 17.5, 0.0])
+ALL = {**hospital_rooms, **hospital_corridors}
+BOXES = {**ROOMS, **CORRIDORS}
+
+# A full, single floor plate fills areas between rooms. Existing room slabs
+# remain, so slabs overlap locally; exclude/hide them if necessary in viewer.
+hospital_floor_plate = create_slab(
+    length=41.0, width=25.0, name="Continuous Level 1 floor plate",
+    origin=np.array([20.5, 12.5, -0.4]), ifcspace=storey
 )
 
-# Registration and separated circulation space
-hospital_rooms["MainPatientRegistration"] = create_room(
-    6.5, 2.8, "Main Patient Registration", np.array([18.6, 13.1, 0.0])
-)
-hospital_rooms["ERRegistration"] = create_room(
-    3.4, 2.7, "ER Registration", np.array([29.0, 13.4, 0.0])
-)
-hospital_rooms["ERWaitingRoom"] = create_room(
-    3.8, 3.1, "ER Waiting Room", np.array([34.0, 13.0, 0.0])
-)
-hospital_rooms["CentralCorridor"] = create_room(
-    20.2, 1.3, "Central Corridor", np.array([11.2, 10.9, 0.0])
-)
-hospital_rooms["ERCorridor"] = create_room(
-    1.1, 13.0, "Emergency Department Corridor", np.array([32.2, 2.6, 0.0])
-)
+# Helpers to resolve wall dictionary keys and derive a shared-wall opening.
+SIDES = {"N": "S", "S": "N", "E": "W", "W": "E"}
 
-# Diagnostic imaging wing
-hospital_rooms["Ultrasound"] = create_room(
-    5.1, 2.6, "Ultrasound", np.array([12.1, 7.2, 0.0])
-)
-hospital_rooms["MRI"] = create_room(
-    6.4, 3.1, "MRI", np.array([10.4, 1.5, 0.0])
-)
-hospital_rooms["NuclearMedicine"] = create_room(
-    6.5, 3.5, "Nuclear Medicine", np.array([18.2, 4.2, 0.0])
-)
-hospital_rooms["EKG"] = create_room(
-    2.3, 2.3, "EKG", np.array([25.0, 8.0, 0.0])
-)
-hospital_rooms["XRay"] = create_room(
-    3.1, 2.6, "X-Ray", np.array([28.6, 8.0, 0.0])
-)
-hospital_rooms["CentralElevatorLobby"] = create_room(
-    1.9, 1.9, "Central Elevator Lobby", np.array([22.2, 10.1, 0.0])
-)
+def wall_of(name, side):
+    return ALL[name][1][name + "wall" + side]
 
-# Emergency department
-hospital_rooms["ERFastTrack"] = create_room(
-    3.6, 4.5, "ER Fast Track", np.array([34.3, 8.0, 0.0])
-)
-hospital_rooms["ERTreatmentArea"] = create_room(
-    3.6, 4.0, "ER Treatment Area", np.array([34.3, 2.6, 0.0])
-)
+def add_connection(a, side_a, b, centre, width=1.2):
+    """Create paired wall cuts at an actual shared room/corridor boundary."""
+    side_b = SIDES[side_a]
+    ax, ay, al, aw = BOXES[a]
+    bx, by, bl, bw = BOXES[b]
+    eps = 1e-7
+    if side_a in ("N", "S"):
+        y = ay + aw if side_a == "N" else ay
+        other_y = by if side_a == "N" else by + bw
+        lo, hi = max(ax, bx), min(ax + al, bx + bl)
+        if abs(y - other_y) > eps or not lo + 0.3 <= centre - width / 2 or centre + width / 2 > hi - 0.3:
+            raise ValueError(f"Invalid shared horizontal boundary: {a} -> {b}")
+        origin = np.array([centre - width / 2, y - 0.1, 0.0])
+    else:
+        x = ax + al if side_a == "E" else ax
+        other_x = bx if side_a == "E" else bx + bl
+        lo, hi = max(ay, by), min(ay + aw, by + bw)
+        if abs(x - other_x) > eps or not lo + 0.3 <= centre - width / 2 or centre + width / 2 > hi - 0.3:
+            raise ValueError(f"Invalid shared vertical boundary: {a} -> {b}")
+        origin = np.array([x - 0.1, centre - width / 2, 0.0])
+    label = f"Opening: {a} to {b}"
+    create_opening(width=width, height=2.1, name=label, origin=origin,
+                   ifcspace1=ALL[a][0], wall1=wall_of(a, side_a),
+                   ifcspace2=ALL[b][0], wall2=wall_of(b, side_b))
 
-# Numbered ER bays: small separated rooms to avoid wall overlap.
-for bay_number, bay_y in zip(range(10, 16), [7.0, 5.8, 4.6, 3.4, 2.2, 1.0]):
-    bay_name = f"ER Bay {bay_number}"
-    hospital_rooms[f"ERBay{bay_number}"] = create_room(
-        1.1, 0.85, bay_name, np.array([39.0, bay_y, 0.0])
-    )
+# Every non-circulation room gets one opening onto a directly adjacent
+# circulation rectangle. Centre coordinates are along the common wall.
+CONNECTIONS = [
+    ("Staff and meeting", "S", "North cross corridor", 1.8, 1.1),
+    ("Operating room 1", "S", "North cross corridor", 7.0, 1.4),
+    ("Theatre support", "N", "North cross corridor", 1.8, 1.1),
+    ("Operating room 2", "E", "Theatre spine", 15.0, 1.4),
+    ("Sterile set-up", "N", "South cross corridor", 1.8, 1.1),
+    ("Operating room 3", "E", "Theatre spine", 3.0, 1.4),
+    ("Operating room 4", "S", "North cross corridor", 14.0, 1.4),
+    ("Scope processing", "S", "North cross corridor", 18.0, 1.1),
+    ("Hybrid theatre", "N", "North cross corridor", 16.0, 1.5),
+    ("Sterile stock", "N", "South cross corridor", 14.5, 1.2),
+    ("Cath lab", "N", "South cross corridor", 18.5, 1.3),
+    ("Recovery bays 1-3", "N", "Recovery circulation", 24.0, 1.3),
+    ("Recovery bays 4-8", "N", "Recovery circulation", 28.5, 1.3),
+    ("Recovery bays 9-12", "N", "Recovery circulation", 35.0, 1.3),
+    ("Recovery bays 13-16", "N", "Recovery circulation", 39.0, 1.3),
+    ("Patient bay hold A", "N", "North cross corridor", 24.0, 1.3),
+    ("Recovery station", "N", "North cross corridor", 27.5, 1.1),
+    ("Recovery utility", "N", "North cross corridor", 30.0, 1.1),
+    ("Patient bay hold B", "N", "North cross corridor", 35.0, 1.3),
+    ("Recovery beds", "N", "North cross corridor", 39.0, 1.3),
+    ("Lab support", "N", "South cross corridor", 24.0, 1.2),
+    ("Patient lobby", "N", "South cross corridor", 27.5, 1.3),
+    ("Lifts and stairs", "N", "South cross corridor", 30.2, 1.2),
+    ("Waiting and reception", "N", "South cross corridor", 35.0, 1.3),
+    ("Consult and offices", "N", "South cross corridor", 39.0, 1.1),
+    ("Staff amenities", "N", "Consult and offices", 39.0, 1.1),
+    # Main corridors cross the three north-south spines.
+    ("North cross corridor", "S", "Theatre spine", 11.5, 0.8),
+]
 
-# ------------------------------------------------------------
-# Continuous storey slab
-#
-# This fills all gaps between rooms and corridors. It is contained
-# directly in the IfcBuildingStorey, not inside an individual room.
-# The original create_slab() helper is used unchanged.
-# ------------------------------------------------------------
+# The last entry above is deliberately not used: north corridor and spine
+# intersect at right angles, not along a full shared edge. The same applies
+# to all six corridor crossings. Opening geometry must be cut in each crossing
+# wall; intersection connectivity is explicit in CORRIDOR_CROSSINGS below.
+CONNECTIONS.pop()
 
-hospital_continuous_slab = create_slab(
-    length=41.2,
-    width=21.5,
-    name="Hospital Continuous Ground Floor Slab",
-    origin=np.array([20.6, 10.75, -0.2]),
-    ifcspace=storey,
-)
+for a, side, b, centre, opening_width in CONNECTIONS:
+    add_connection(a, side, b, centre, opening_width)
 
-# ------------------------------------------------------------
-# Exterior envelope
-#
-# The plan has a stepped boundary. These wall segments approximate
-# that outline and sit outside the room walls. They are deliberately
-# segmented rather than represented by one large rectangle.
-# ------------------------------------------------------------
+# North recovery circulation adjoins all three vertical spines at its south
+# side. It joins the cross corridor through those spines. No opening is cut at
+# those spine contacts here because they are T/intersection wall geometries.
+CORRIDOR_CROSSINGS = [
+    ("Theatre spine", "North cross corridor", 11.5, 19.0),
+    ("Clinical spine", "North cross corridor", 21.25, 19.0),
+    ("Public spine", "North cross corridor", 32.25, 19.0),
+    ("Theatre spine", "South cross corridor", 11.5, 7.0),
+    ("Clinical spine", "South cross corridor", 21.25, 7.0),
+    ("Public spine", "South cross corridor", 32.25, 7.0),
+    ("Theatre spine", "Recovery circulation", 12.0, 24.5),
+    ("Clinical spine", "Recovery circulation", 21.25, 24.5),
+    ("Public spine", "Recovery circulation", 32.25, 24.5),
+]
 
-exterior_walls = {}
+# Exterior walls use your create_wall; gaps at entrance/stair exits are made
+# by segmenting the exterior rather than calling create_opening(None,...).
+exterior_walls = [
+    create_wall(4.0, "Exterior south west", np.array([0.0, -0.4, 0.0]), False, storey),
+    create_wall(23.5, "Exterior south centre", np.array([5.5, -0.4, 0.0]), False, storey),
+    create_wall(10.5, "Exterior south east", np.array([30.5, -0.4, 0.0]), False, storey),
+    create_wall(3.0, "Exterior north west", np.array([0.0, 25.1, 0.0]), False, storey),
+    create_wall(27.0, "Exterior north centre", np.array([4.5, 25.1, 0.0]), False, storey),
+    create_wall(8.0, "Exterior north east", np.array([33.0, 25.1, 0.0]), False, storey),
+    create_wall(11.0, "Exterior west lower", np.array([-0.4, 0.0, 0.0]), True, storey),
+    create_wall(12.5, "Exterior west upper", np.array([-0.4, 12.5, 0.0]), True, storey),
+    create_wall(18.0, "Exterior east lower", np.array([41.2, 0.0, 0.0]), True, storey),
+    create_wall(5.5, "Exterior east upper", np.array([41.2, 19.5, 0.0]), True, storey),
+]
 
-# South edge and south-west / south-east returns
-exterior_walls["SouthWest"] = create_wall(
-    10.0, "Exterior Wall South West", np.array([0.0, -0.2, 0.0]), False, storey
-)
-exterior_walls["SouthCentre"] = create_wall(
-    19.0, "Exterior Wall South Centre", np.array([10.8, -0.2, 0.0]), False, storey
-)
-exterior_walls["SouthEast"] = create_wall(
-    10.5, "Exterior Wall South East", np.array([30.5, -0.2, 0.0]), False, storey
-)
+# Exterior exit positions for later IfcDoor / graph work; at present they are
+# represented only by perimeter gaps, NOT IfcDoor or IfcOpeningElement objects.
+EXITS = {
+    "West exit": (0.0, 11.75),
+    "South theatre exit": (4.75, 0.0),
+    "South patient lobby exit": (29.75, 0.0),
+    "North stair exit": (3.75, 25.0),
+    "North recovery exit": (32.25, 25.0),
+    "East exit": (41.0, 18.75),
+}
 
-# North edge, separated to reflect the entrance/recessed frontage
-exterior_walls["NorthWest"] = create_wall(
-    10.0, "Exterior Wall North West", np.array([0.0, 21.7, 0.0]), False, storey
-)
-exterior_walls["NorthCentre"] = create_wall(
-    13.0, "Exterior Wall North Centre", np.array([13.0, 21.7, 0.0]), False, storey
-)
-exterior_walls["NorthEast"] = create_wall(
-    14.2, "Exterior Wall North East", np.array([26.8, 21.7, 0.0]), False, storey
-)
-
-# West facade with a small step to match the food-service projection
-exterior_walls["WestSouth"] = create_wall(
-    7.5, "Exterior Wall West South", np.array([-0.2, 0.0, 0.0]), True, storey
-)
-exterior_walls["WestMid"] = create_wall(
-    9.0, "Exterior Wall West Middle", np.array([-0.2, 8.0, 0.0]), True, storey
-)
-exterior_walls["WestNorth"] = create_wall(
-    5.0, "Exterior Wall West North", np.array([-0.2, 17.0, 0.0]), True, storey
-)
-
-# East facade, including the ER-side projection
-exterior_walls["EastSouth"] = create_wall(
-    9.0, "Exterior Wall East South", np.array([41.2, 0.0, 0.0]), True, storey
-)
-exterior_walls["EastER"] = create_wall(
-    8.0, "Exterior Wall East Emergency", np.array([41.2, 9.5, 0.0]), True, storey
-)
-exterior_walls["EastNorth"] = create_wall(
-    4.2, "Exterior Wall East North", np.array([41.2, 17.5, 0.0]), True, storey
-)
-
-# Short return walls make the stepped/recessed portions visible.
-exterior_walls["WestFoodServiceReturn"] = create_wall(
-    1.7, "Exterior Wall West Food Service Return", np.array([-0.2, 8.0, 0.0]), False, storey
-)
-exterior_walls["EastERReturn"] = create_wall(
-    1.8, "Exterior Wall East ER Return", np.array([39.4, 9.5, 0.0]), False, storey
-)
-exterior_walls["NorthEntranceReturnWest"] = create_wall(
-    1.0, "Exterior Wall Main Entrance Return West", np.array([13.0, 20.7, 0.0]), True, storey
-)
-exterior_walls["NorthEntranceReturnEast"] = create_wall(
-    1.0, "Exterior Wall Main Entrance Return East", np.array([26.0, 20.7, 0.0]), True, storey
-)
-
-# ------------------------------------------------------------
-# Output
-# ------------------------------------------------------------
-
-model.write("hospital_floor_plan_revised.ifc")
-print("Hospital IFC model written to hospital_floor_plan_revised.ifc")
+model.write("hospital_level1_connected.ifc")
+print(f"Wrote hospital_level1_connected.ifc: {len(ROOMS)} rooms, "
+      f"{len(CORRIDORS)} corridor rectangles, {len(CONNECTIONS)} paired openings.")
